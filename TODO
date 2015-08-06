@@ -1,0 +1,4 @@
+- set, remove, or change password on a private key file
+- prompt for private key password at genkey time
+- add an `encrypt` command
+- show more detail in indentify, expand various identifiers to descriptive strings
