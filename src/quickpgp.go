@@ -18,6 +18,9 @@ Generate detached signature for <file> in <file>.sig.asc
 Verify detached signature <file>.sig.asc for <file>
    ` + binname + ` verify <file> <public key file>
 
+Encrypt <file> with <pubkeyfile>, sign with <private key file>, store in <file>.pgp
+   ` + binname + ` encryptsign <file> <public key file> <private key file>
+
 Generates key pair in <keyfilebase>.{key,pub}.asc
    ` + binname + ` genkey <keyfilebase>
    Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity
@@ -47,13 +50,20 @@ func main() {
 	action := os.Args[1]
 
 	switch action {
-    case "license":
-        printLicense()
+	case "license":
+		printLicense()
 	case "sign":
 		if len(os.Args) == 4 {
 			ifile := os.Args[2]
 			keyfile := os.Args[3]
 			printError(quickpgp.Sign(keyfile, ifile, ifile+".sig.asc"))
+		}
+	case "encryptsign":
+		if len(os.Args) == 5 {
+			ifile := os.Args[2]
+			keyfile := os.Args[3]
+			pubfile := os.Args[4]
+			printError(quickpgp.EncryptSign(keyfile, pubfile, ifile, ifile+".pgp"))
 		}
 	case "verify":
 		if len(os.Args) == 4 {
@@ -77,7 +87,7 @@ func main() {
 }
 
 func printLicense() {
-    fmt.Println(`
+	fmt.Println(`
 The MIT License (MIT)
 
 Copyright (c) 2015 Andrew Bakun
@@ -100,6 +110,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 `)
-    os.Exit(0)
+	os.Exit(0)
 }
-
