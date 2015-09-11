@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	_ "golang.org/x/crypto/ripemd160"
 	"quickpgp"
 )
 
@@ -18,8 +19,9 @@ Generate detached signature for <file> in <file>.sig.asc
 Verify detached signature <file>.sig.asc for <file>
    ` + binname + ` verify <file> <public key file>
 
-Encrypt <file> with <pubkeyfile>, sign with <private key file>, store in <file>.pgp
-   ` + binname + ` encryptsign <file> <public key file> <private key file>
+Encrypt <file> with (recipient) <public key file>, sign with
+(signer) <private key file>, output to <file>.pgp
+   ` + binname + ` encryptsign <file> <private key file> <public key file>
 
 Generates key pair in <keyfilebase>.{key,pub}.asc
    ` + binname + ` genkey <keyfilebase>
