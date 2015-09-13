@@ -6,10 +6,11 @@ import (
 	"os"
 	"path"
 
+	_ "golang.org/x/crypto/ripemd160"
 	"golang.org/x/crypto/openpgp"
 )
 
-func EncryptSign(privateKeyFileName string, publicKeyFileName string, fileToEnc string, outfile string) (err error) {
+func EncryptSign(privateKeyFileName string, publicKeyFileName string, plainTextFile string, cipherTextFile string) (err error) {
 
 	var signer *openpgp.Entity
 	if signer, err = readPrivateKeyFile(privateKeyFileName); err != nil {
@@ -21,38 +22,38 @@ func EncryptSign(privateKeyFileName string, publicKeyFileName string, fileToEnc 
 		return err
 	}
 
-	var input *os.File
-	if input, err = os.Open(fileToEnc); err != nil {
+	var plainTextInput *os.File
+	if plainTextInput, err = os.Open(plainTextFile); err != nil {
 		return err
 	}
-	defer input.Close()
+	defer plainTextInput.Close()
 
-	inputStat, err := input.Stat()
+	inputStat, err := plainTextInput.Stat()
 	if err != nil {
 		return err
 	}
-	inputBytes := inputStat.Size()
+	plainTextBytes := inputStat.Size()
 
-	var output *os.File
-	if output, err = os.Create(outfile); err != nil {
+	var cipherTextOutput *os.File
+	if cipherTextOutput, err = os.Create(cipherTextFile); err != nil {
 		return err
 	}
 
 	fHints := &openpgp.FileHints{
 		IsBinary: true,
-		FileName: path.Base(fileToEnc),
+		FileName: path.Base(plainTextFile),
 		ModTime: inputStat.ModTime(),
 	}
 
-	we, err := openpgp.Encrypt(output, recipients, signer, fHints, nil)
-	if err != nil {
+	var we io.WriteCloser
+	if we, err = openpgp.Encrypt(cipherTextOutput, recipients, signer, fHints, nil); err != nil {
 		return err
 	}
 	defer we.Close()
 
-	copiedBytes, err := io.Copy(we, input)
-	if copiedBytes != inputBytes {
-		return fmt.Errorf("encrypted only %d bytes out of %d", copiedBytes, inputBytes)
+	copiedBytes, err := io.Copy(we, plainTextInput)
+	if copiedBytes != plainTextBytes {
+		return fmt.Errorf("encrypted only %d bytes out of %d", copiedBytes, plainTextBytes)
 	}
 	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 
-	_ "golang.org/x/crypto/ripemd160"
 	"quickpgp"
 )
 
@@ -22,6 +21,12 @@ func usage(binname string) {
 ` + binname + ` encryptsign <file> <private key file> <public key file>
     Encrypt <file> with (recipient) <public key file>, sign with
     (signer) <private key file>, output to <file>.pgp
+
+` + binname + ` decrypt <file> <private key file> <public key file>
+    Decrypt <file> with (recipient) <private key file> and verify
+    its signature with (signer) <public key file>.
+    <file> must have the extension .pgp and the output will be written to
+    the filename hint if set, otherwise <file> without the .pgp extension
 
 ` + binname + ` genkey <keyfilebase>
     Generates key pair in <keyfilebase>.{key,pub}.asc
@@ -66,6 +71,13 @@ func main() {
 			keyfile := os.Args[3]
 			pubfile := os.Args[4]
 			printError(quickpgp.EncryptSign(keyfile, pubfile, ifile, ifile+".pgp"))
+		}
+	case "decrypt":
+		if len(os.Args) == 5 {
+			ifile := os.Args[2]
+			keyfile := os.Args[3]
+			pubfile := os.Args[4]
+			printError(quickpgp.Decrypt(keyfile, pubfile, ifile))
 		}
 	case "verify":
 		if len(os.Args) == 4 {
