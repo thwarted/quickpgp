@@ -13,25 +13,25 @@ func usage(binname string) {
 	fmt.Println("Usage: " + binname + " <operation> <arg> ...")
 	binname = path.Base(binname)
 	fmt.Println(`
-Generate detached signature for <file> in <file>.sig.asc
-   ` + binname + ` sign <file> <private key file>
+` + binname + ` sign <file> <private key file>
+    Generate detached signature for <file> in <file>.sig.asc
 
-Verify detached signature <file>.sig.asc for <file>
-   ` + binname + ` verify <file> <public key file>
+` + binname + ` verify <file> <public key file>
+    Verify detached signature <file>.sig.asc for <file>
 
-Encrypt <file> with (recipient) <public key file>, sign with
-(signer) <private key file>, output to <file>.pgp
-   ` + binname + ` encryptsign <file> <private key file> <public key file>
+` + binname + ` encryptsign <file> <private key file> <public key file>
+    Encrypt <file> with (recipient) <public key file>, sign with
+    (signer) <private key file>, output to <file>.pgp
 
-Generates key pair in <keyfilebase>.{key,pub}.asc
-   ` + binname + ` genkey <keyfilebase>
-   Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity
+` + binname + ` genkey <keyfilebase>
+    Generates key pair in <keyfilebase>.{key,pub}.asc
+    Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity
 
-Display details of the given <keyfile>
-   ` + binname + ` identify <keyfile>
+` + binname + ` identify <keyfile>
+    Display details of the given <keyfile>
 
-View the license
-   ` + binname + ` license
+` + binname + ` license
+    View the license
 `)
 }
 
@@ -111,6 +111,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+Additional portions Copyright (c) 2009 The Go Authors. All rights reserved.
 `)
 	os.Exit(0)
 }

@@ -14,12 +14,8 @@ func Verify(publicKeyFileName string, fileToVerify string, sigFileName string) e
 	}
 	defer signed.Close()
 
-	kr, err := os.Open(publicKeyFileName)
-	if err != nil {
-		return err
-	}
-	keyring, err := openpgp.ReadArmoredKeyRing(kr)
-	if err != nil {
+	var keyring openpgp.EntityList
+	if keyring, err = readPublicKeyFile(publicKeyFileName); err != nil {
 		return err
 	}
 
