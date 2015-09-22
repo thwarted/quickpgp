@@ -9,7 +9,7 @@ import (
 	"hostutils"
 )
 
-func readPrivateKeyFile(filename string) (signer *openpgp.Entity, err error) {
+func readPrivateKeyFile(filename string) (e *openpgp.Entity, err error) {
 	var krpriv *os.File
 
 	if krpriv, err = os.Open(filename); err != nil {
@@ -24,18 +24,18 @@ func readPrivateKeyFile(filename string) (signer *openpgp.Entity, err error) {
 	if len(entityList) != 1 {
 		return nil, errors.New("private key file must contain only one key")
 	}
-	signer = entityList[0]
-	if signer.PrivateKey == nil {
+	e = entityList[0]
+	if e.PrivateKey == nil {
 		return nil, fmt.Errorf("%s does not contain a private key", filename)
 	}
-	if signer.PrivateKey.Encrypted {
+	if e.PrivateKey.Encrypted {
 		prompt := fmt.Sprintf("Passphrase to decrypt %s: ", filename)
 		var pass []byte
 		if pass, err = hostutils.ReadPassword(prompt, 0); err == nil {
-			err = signer.PrivateKey.Decrypt(pass)
+			err = e.PrivateKey.Decrypt(pass)
 		}
 	}
-	return signer, err
+	return e, err
 }
 
 func readPublicKeyFile(filename string) (openpgp.EntityList, error) {
@@ -43,9 +43,9 @@ func readPublicKeyFile(filename string) (openpgp.EntityList, error) {
 	if err != nil {
 		return nil, err
 	}
-	recipients, err := openpgp.ReadArmoredKeyRing(krpub)
+	e, err := openpgp.ReadArmoredKeyRing(krpub)
 	if err != nil {
 		return nil, err
 	}
-	return recipients, nil
+	return e, nil
 }
