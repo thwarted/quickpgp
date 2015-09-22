@@ -1,12 +1,14 @@
 package quickpgp
 
 import (
+	"crypto"
 	"errors"
 	"fmt"
 	"os"
 
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
+	"golang.org/x/crypto/openpgp/packet"
 )
 
 func entityData() (name string, comment string, email string) {
@@ -40,6 +42,23 @@ func GenerateKey(keyFileBase string) (err error) {
 		return err
 	}
 	for _, id := range e.Identities {
+		id.SelfSignature.PreferredSymmetric = []uint8{
+			// uint8(packet.CipherAES256),
+			// uint8(packet.CipherAES192),
+			// uint8(packet.CipherAES128),
+			uint8(packet.CipherCAST5),
+			// uint8(packet.Cipher3DES),
+		}
+		id.SelfSignature.PreferredHash = []uint8{
+			// uint8(crypto.MD5SHA1),
+			// uint8(crypto.MD5),
+			uint8(crypto.RIPEMD160),
+			// uint8(crypto.SHA3_224),
+			// uint8(crypto.SHA3_256),
+		}
+		id.SelfSignature.PreferredCompression = []uint8{
+			uint8(packet.CompressionNone),
+		}
 		err := id.SelfSignature.SignUserId(id.UserId.Id, e.PrimaryKey, e.PrivateKey, nil)
 		if err != nil {
 			return err

@@ -12,21 +12,31 @@ func usage(binname string) {
 	fmt.Println("Usage: " + binname + " <operation> <arg> ...")
 	binname = path.Base(binname)
 	fmt.Println(`
-Generate detached signature for <file> in <file>.sig.asc
-   ` + binname + ` sign <file> <private key file>
+` + binname + ` sign <file> <private key file>
+    Generate detached signature for <file> in <file>.sig.asc
 
-Verify detached signature <file>.sig.asc for <file>
-   ` + binname + ` verify <file> <public key file>
+` + binname + ` verify <file> <public key file>
+    Verify detached signature <file>.sig.asc for <file>
 
-Generates key pair in <keyfilebase>.{key,pub}.asc
-   ` + binname + ` genkey <keyfilebase>
-   Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity
+` + binname + ` encryptsign <file> <private key file> <public key file>
+    Encrypt <file> with (recipient) <public key file>, sign with
+    (signer) <private key file>, output to <file>.pgp
 
-Display details of the given <keyfile>
-   ` + binname + ` identify <keyfile>
+` + binname + ` decrypt <file> <private key file> <public key file>
+    Decrypt <file> with (recipient) <private key file> and verify
+    its signature with (signer) <public key file>.
+    <file> must have the extension .pgp and the output will be written to
+    the filename hint if set, otherwise <file> without the .pgp extension
 
-View the license
-   ` + binname + ` license
+` + binname + ` genkey <keyfilebase>
+    Generates key pair in <keyfilebase>.{key,pub}.asc
+    Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity
+
+` + binname + ` identify <keyfile>
+    Display details of the given <keyfile>
+
+` + binname + ` license
+    View the license
 `)
 }
 
@@ -47,13 +57,27 @@ func main() {
 	action := os.Args[1]
 
 	switch action {
-    case "license":
-        printLicense()
+	case "license":
+		printLicense()
 	case "sign":
 		if len(os.Args) == 4 {
 			ifile := os.Args[2]
 			keyfile := os.Args[3]
 			printError(quickpgp.Sign(keyfile, ifile, ifile+".sig.asc"))
+		}
+	case "encryptsign":
+		if len(os.Args) == 5 {
+			ifile := os.Args[2]
+			keyfile := os.Args[3]
+			pubfile := os.Args[4]
+			printError(quickpgp.EncryptSign(keyfile, pubfile, ifile, ifile+".pgp"))
+		}
+	case "decrypt":
+		if len(os.Args) == 5 {
+			ifile := os.Args[2]
+			keyfile := os.Args[3]
+			pubfile := os.Args[4]
+			printError(quickpgp.Decrypt(keyfile, pubfile, ifile))
 		}
 	case "verify":
 		if len(os.Args) == 4 {
@@ -77,7 +101,7 @@ func main() {
 }
 
 func printLicense() {
-    fmt.Println(`
+	fmt.Println(`
 The MIT License (MIT)
 
 Copyright (c) 2015 Andrew Bakun
@@ -99,7 +123,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-`)
-    os.Exit(0)
-}
 
+Additional portions Copyright (c) 2009 The Go Authors. All rights reserved.
+`)
+	os.Exit(0)
+}

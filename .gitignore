@@ -1,0 +1,5 @@
+*.key.asc
+*.pub.asc
+*.pgp
+*.sig.asc
+./quickpgp

@@ -1,4 +1,6 @@
 - set, remove, or change password on a private key file
 - prompt for private key password at genkey time
-- add an `encrypt` command
-- show more detail in indentify, expand various identifiers to descriptive strings
+- show more detail in identify, expand various identifiers to descriptive strings
+- expand identify to anything containing openpgp packets (like gpg --list-packets)
+- allow specifying the bit length of the generated key
+- add meaningful exit codes
