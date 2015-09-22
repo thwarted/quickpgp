@@ -3,7 +3,9 @@ package quickpgp
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/crypto/openpgp"
@@ -14,6 +16,10 @@ import (
 var _ = hostutils.Display
 
 func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (err error) {
+
+	if filepath.Ext(file) != ".pgp" {
+		return fmt.Errorf("quickpgp: filename to decrypt must end in .pgp")
+	}
 
 	var signer openpgp.EntityList
 	if signer, err = readPublicKeyFile(publicKeyFileName); err != nil {
@@ -42,25 +48,48 @@ func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (
 		return err
 	}
 
-	var plainTextOutput *os.File
-	// Should use temp file here
-	// Then rename to either file (without .pgp extension) or
-	//  use md.LiteralData.FileName
-	outfile := strings.TrimSuffix(file, ".pgp")
-	if plainTextOutput, err = os.Create(outfile + ".new"); err != nil {
+	var cwd string
+	if cwd, err = os.Getwd(); err != nil {
 		return err
 	}
+	var plainTextOutput *os.File
+	if plainTextOutput, err = ioutil.TempFile(cwd, ".quickpgp."); err != nil {
+		return err
+	}
+	var cleanExit bool
+	defer func() {
+		if !cleanExit {
+			_ = os.Remove(plainTextOutput.Name())
+		}
+	}()
+
 	_, err = io.Copy(plainTextOutput, md.UnverifiedBody)
 	if err != nil {
 		return err
 	}
+	plainTextOutput.Close()
 	if md.SignatureError != nil {
-		// TODO cleanup tmp file
 		return err
 	}
 	if md.Signature == nil {
 		return openpgperrors.ErrUnknownIssuer
 	}
 
-	return nil
+	bareFilename := strings.TrimSuffix(file, filepath.Ext(file))
+	if len(md.LiteralData.FileName) != 0 && md.LiteralData.FileName != bareFilename {
+		fmt.Fprintf(os.Stderr, "quickpgp: suggested filename \"%s\"\n", md.LiteralData.FileName)
+	}
+	var finalFilename string
+	if _, err := os.Stat(bareFilename); os.IsNotExist(err) {
+		finalFilename = bareFilename
+	} else {
+		finalFilename = fmt.Sprintf("%s.%X", bareFilename, uint32(md.SignedByKeyId&0xffffffff))
+		fmt.Fprintf(os.Stderr, "quickpgp: \"%s\" exists, writing to \"%s\"\n", bareFilename, finalFilename)
+	}
+
+	err = os.Rename(plainTextOutput.Name(), finalFilename)
+	if err == nil {
+		cleanExit = true
+	}
+	return err
 }
