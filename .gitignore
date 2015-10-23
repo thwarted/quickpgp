@@ -2,4 +2,4 @@
 *.pub.asc
 *.pgp
 *.sig.asc
-./quickpgp
+/quickpgp
