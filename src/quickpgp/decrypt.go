@@ -10,7 +10,6 @@ import (
 
 	"golang.org/x/crypto/openpgp"
 	openpgperrors "golang.org/x/crypto/openpgp/errors"
-	"hostutils"
 )
 
 func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (err error) {
