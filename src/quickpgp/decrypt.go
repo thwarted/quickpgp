@@ -13,8 +13,6 @@ import (
 	"hostutils"
 )
 
-var _ = hostutils.Display
-
 func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (err error) {
 
 	if filepath.Ext(file) != ".pgp" {
