@@ -1,7 +1,6 @@
 package quickpgp
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -19,10 +18,10 @@ func readPrivateKeyFile(filename string) (e *openpgp.Entity, err error) {
 
 	entityList, err := openpgp.ReadArmoredKeyRing(krpriv)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading %s: %s", filename, err)
 	}
 	if len(entityList) != 1 {
-		return nil, errors.New("private key file must contain only one key")
+		return nil, fmt.Errorf("%s must contain only one key", filename)
 	}
 	e = entityList[0]
 	if e.PrivateKey == nil {
@@ -45,7 +44,7 @@ func readPublicKeyFile(filename string) (openpgp.EntityList, error) {
 	}
 	e, err := openpgp.ReadArmoredKeyRing(krpub)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading %s: %s", filename, err)
 	}
 	return e, nil
 }
