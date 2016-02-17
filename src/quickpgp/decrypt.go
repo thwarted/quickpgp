@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/openpgp"
+	"golang.org/x/crypto/openpgp/armor"
 	openpgperrors "golang.org/x/crypto/openpgp/errors"
 )
 
@@ -40,7 +41,12 @@ func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (
 		return err
 	}
 
-	md, err := openpgp.ReadMessage(cipherTextFile, keyring, nil, nil)
+	var p *armor.Block
+	if p, err = armor.Decode(cipherTextFile); err != nil {
+		return err
+	}
+
+	md, err := openpgp.ReadMessage(p.Body, keyring, nil, nil)
 	if err != nil {
 		return err
 	}
