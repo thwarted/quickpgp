@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"hostutils"
 	"quickpgp"
 )
 
@@ -48,6 +49,12 @@ func printError(err error) {
 	os.Exit(1)
 }
 
+func readPassword(filename string) (pass []byte, err error) {
+	prompt := fmt.Sprintf("Passphrase to decrypt %s: ", filename)
+	pass, err = hostutils.ReadPassword(prompt, 0)
+	return
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		usage(os.Args[0])
@@ -63,21 +70,21 @@ func main() {
 		if len(os.Args) == 4 {
 			ifile := os.Args[2]
 			keyfile := os.Args[3]
-			printError(quickpgp.Sign(keyfile, ifile, ifile+".sig.asc"))
+			printError(quickpgp.Sign(keyfile, readPassword, ifile, ifile+".sig.asc"))
 		}
 	case "encryptsign":
 		if len(os.Args) == 5 {
 			ifile := os.Args[2]
 			keyfile := os.Args[3]
 			pubfile := os.Args[4]
-			printError(quickpgp.EncryptSign(keyfile, pubfile, ifile, ifile+".pgp"))
+			printError(quickpgp.EncryptSign(keyfile, readPassword, pubfile, ifile, ifile+".pgp"))
 		}
 	case "decrypt":
 		if len(os.Args) == 5 {
 			ifile := os.Args[2]
 			keyfile := os.Args[3]
 			pubfile := os.Args[4]
-			printError(quickpgp.Decrypt(keyfile, pubfile, ifile))
+			printError(quickpgp.Decrypt(keyfile, readPassword, pubfile, ifile))
 		}
 	case "verify":
 		if len(os.Args) == 4 {

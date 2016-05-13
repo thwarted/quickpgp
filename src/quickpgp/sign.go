@@ -6,10 +6,10 @@ import (
 	"golang.org/x/crypto/openpgp"
 )
 
-func Sign(privateKeyFileName string, fileToSign string, signatureFile string) (err error) {
+func Sign(privateKeyFileName string, readPass readPasswordCallback, fileToSign string, signatureFile string) (err error) {
 
 	var signer *openpgp.Entity
-	if signer, err = readPrivateKeyFile(privateKeyFileName); err != nil {
+	if signer, err = readPrivateKeyFile(privateKeyFileName, readPass); err != nil {
 		return err
 	}
 

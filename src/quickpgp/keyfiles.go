@@ -5,10 +5,11 @@ import (
 	"os"
 
 	"golang.org/x/crypto/openpgp"
-	"hostutils"
 )
 
-func readPrivateKeyFile(filename string) (e *openpgp.Entity, err error) {
+type readPasswordCallback func(filename string) (pass []byte, err error)
+
+func readPrivateKeyFile(filename string, passPrompt readPasswordCallback) (e *openpgp.Entity, err error) {
 	var krpriv *os.File
 
 	if krpriv, err = os.Open(filename); err != nil {
@@ -28,10 +29,13 @@ func readPrivateKeyFile(filename string) (e *openpgp.Entity, err error) {
 		return nil, fmt.Errorf("%s does not contain a private key", filename)
 	}
 	if e.PrivateKey.Encrypted {
-		prompt := fmt.Sprintf("Passphrase to decrypt %s: ", filename)
-		var pass []byte
-		if pass, err = hostutils.ReadPassword(prompt, 0); err == nil {
-			err = e.PrivateKey.Decrypt(pass)
+		if passPrompt != nil {
+			var pass []byte
+			if pass, err = passPrompt(filename); err == nil {
+				err = e.PrivateKey.Decrypt(pass)
+			}
+		} else {
+			return nil, fmt.Errorf("%s is encrypted", filename)
 		}
 	}
 	return e, err
