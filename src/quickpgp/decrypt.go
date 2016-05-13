@@ -12,7 +12,7 @@ import (
 	openpgperrors "golang.org/x/crypto/openpgp/errors"
 )
 
-func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (err error) {
+func Decrypt(privateKeyFileName string, readPass readPasswordCallback, publicKeyFileName string, file string) (err error) {
 
 	if filepath.Ext(file) != ".pgp" {
 		return fmt.Errorf("quickpgp: filename to decrypt must end in .pgp")
@@ -24,7 +24,7 @@ func Decrypt(privateKeyFileName string, publicKeyFileName string, file string) (
 	}
 
 	var recipient *openpgp.Entity
-	if recipient, err = readPrivateKeyFile(privateKeyFileName); err != nil {
+	if recipient, err = readPrivateKeyFile(privateKeyFileName, readPass); err != nil {
 		return err
 	}
 	if recipient == nil {

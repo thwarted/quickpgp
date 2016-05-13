@@ -6,14 +6,14 @@ import (
 	"os"
 	"path"
 
-	_ "golang.org/x/crypto/ripemd160"
 	"golang.org/x/crypto/openpgp"
+	_ "golang.org/x/crypto/ripemd160"
 )
 
-func EncryptSign(privateKeyFileName string, publicKeyFileName string, plainTextFile string, cipherTextFile string) (err error) {
+func EncryptSign(privateKeyFileName string, readPass readPasswordCallback, publicKeyFileName string, plainTextFile string, cipherTextFile string) (err error) {
 
 	var signer *openpgp.Entity
-	if signer, err = readPrivateKeyFile(privateKeyFileName); err != nil {
+	if signer, err = readPrivateKeyFile(privateKeyFileName, readPass); err != nil {
 		return err
 	}
 
@@ -42,7 +42,7 @@ func EncryptSign(privateKeyFileName string, publicKeyFileName string, plainTextF
 	fHints := &openpgp.FileHints{
 		IsBinary: true,
 		FileName: path.Base(plainTextFile),
-		ModTime: inputStat.ModTime(),
+		ModTime:  inputStat.ModTime(),
 	}
 
 	var we io.WriteCloser
