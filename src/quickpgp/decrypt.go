@@ -66,7 +66,7 @@ func Decrypt(privateKeyFileName string, readPass readPasswordCallback, publicKey
 	}
 	plainTextOutput.Close()
 	if md.SignatureError != nil {
-		return err
+		return md.SignatureError
 	}
 	if md.Signature == nil {
 		return openpgperrors.ErrUnknownIssuer
