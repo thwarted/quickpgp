@@ -31,7 +31,8 @@ func usage(binname string) {
 
 ` + binname + ` genkey <keyfilebase>
     Generates key pair in <keyfilebase>.{key,pub}.asc
-    Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity
+    Uses envvars LOGNAME, COMMENT, and HOSTNAME to set the identity as
+       "LOGNAME (COMMENT) <LOGNAME@HOSTNAME>"
 
 ` + binname + ` identify <keyfile>
     Display details of the given <keyfile>
@@ -95,7 +96,11 @@ func main() {
 	case "genkey":
 		if len(os.Args) == 3 {
 			keyfilebase := os.Args[2]
-			printError(quickpgp.GenerateKey(keyfilebase))
+			if err := quickpgp.GenerateKey(keyfilebase); err != nil {
+				printError(err)
+			} else {
+				printError(quickpgp.IdentifyKey(keyfilebase + ".key.asc"))
+			}
 		}
 	case "identify":
 		if len(os.Args) == 3 {
