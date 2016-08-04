@@ -25,7 +25,9 @@ func readPrivateKeyFile(filename string, passPrompt readPasswordCallback) (e *op
 		keyFileReader = openpgp.ReadArmoredKeyRing
 	}
 
-	krpriv.Seek(0, 0)
+	if _, err = krpriv.Seek(0, 0); err != nil {
+		return nil, err
+	}
 	if entityList, err = keyFileReader(krpriv); err != nil {
 		return nil, fmt.Errorf("reading %s: %s", filename, err)
 	}
@@ -62,7 +64,9 @@ func readPublicKeyFile(filename string) (entityList openpgp.EntityList, err erro
 		keyFileReader = openpgp.ReadArmoredKeyRing
 	}
 
-	krpub.Seek(0, 0)
+	if _, err = krpub.Seek(0, 0); err != nil {
+		return nil, err
+	}
 	if entityList, err = keyFileReader(krpub); err != nil {
 		return nil, fmt.Errorf("reading %s: %s", filename, err)
 	}
