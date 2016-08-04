@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"golang.org/x/crypto/openpgp"
+	"golang.org/x/crypto/openpgp/armor"
 )
 
 type readPasswordCallback func(filename string) (pass []byte, err error)
@@ -17,8 +18,15 @@ func readPrivateKeyFile(filename string, passPrompt readPasswordCallback) (e *op
 	}
 	defer krpriv.Close()
 
-	entityList, err := openpgp.ReadArmoredKeyRing(krpriv)
-	if err != nil {
+	var entityList openpgp.EntityList
+
+	keyFileReader := openpgp.ReadKeyRing
+	if _, err = armor.Decode(krpriv); err == nil {
+		keyFileReader = openpgp.ReadArmoredKeyRing
+	}
+
+	krpriv.Seek(0, 0)
+	if entityList, err = keyFileReader(krpriv); err != nil {
 		return nil, fmt.Errorf("reading %s: %s", filename, err)
 	}
 	if len(entityList) != 1 {
@@ -41,14 +49,22 @@ func readPrivateKeyFile(filename string, passPrompt readPasswordCallback) (e *op
 	return e, err
 }
 
-func readPublicKeyFile(filename string) (openpgp.EntityList, error) {
-	krpub, err := os.Open(filename)
-	if err != nil {
+func readPublicKeyFile(filename string) (entityList openpgp.EntityList, err error) {
+	var krpub *os.File
+
+	if krpub, err = os.Open(filename); err != nil {
 		return nil, err
 	}
-	e, err := openpgp.ReadArmoredKeyRing(krpub)
-	if err != nil {
+	defer krpub.Close()
+
+	keyFileReader := openpgp.ReadKeyRing
+	if _, err = armor.Decode(krpub); err == nil {
+		keyFileReader = openpgp.ReadArmoredKeyRing
+	}
+
+	krpub.Seek(0, 0)
+	if entityList, err = keyFileReader(krpub); err != nil {
 		return nil, fmt.Errorf("reading %s: %s", filename, err)
 	}
-	return e, nil
+	return entityList, nil
 }
