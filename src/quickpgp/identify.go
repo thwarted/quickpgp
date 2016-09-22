@@ -49,31 +49,35 @@ func IdentifyKey(keyfile string) error {
 	printHeader(keyfile)
 
 	for _, entity := range keyring {
-		var bl uint16
-		sec := entity.PrivateKey
-
-		if sec != nil {
-			bl, _ = sec.BitLength()
-			fmt.Printf("%3s   %4d /%16s %s\n", "sec", bl, sec.KeyIdString(), sec.CreationTime.Format(time.RFC3339))
-			fmt.Printf("%3s   Key fingerprint = %s\n", "", fingerprintString(sec.Fingerprint[:]))
-			fmt.Println()
-		}
-
-		pub := entity.PrimaryKey
-		bl, _ = pub.BitLength()
-		fmt.Printf("%3s   %4d /%16s %s\n", "pub", bl, pub.KeyIdString(), pub.CreationTime.Format(time.RFC3339))
-		fmt.Printf("%3s   Key fingerprint = %s\n", "", fingerprintString(pub.Fingerprint[:]))
-		for _, identity := range entity.Identities {
-			fmt.Printf("%3s   %4s  %16s %s\n", "uid", "", "", identity.Name)
-		}
-		for _, sk := range entity.Subkeys {
-			subkey := sk.PublicKey
-			bl, _ := subkey.BitLength()
-			fmt.Printf("%3s   %4d /%16s %s\n", "sub", bl, subkey.KeyIdString(), subkey.CreationTime.Format(time.RFC3339))
-		}
+		dumpKeyInfo(entity)
 	}
 
 	return nil
+}
+
+func dumpKeyInfo(entity *openpgp.Entity) {
+	var bl uint16
+	sec := entity.PrivateKey
+
+	if sec != nil {
+		bl, _ = sec.BitLength()
+		fmt.Printf("%3s   %4d /%16s %s\n", "sec", bl, sec.KeyIdString(), sec.CreationTime.Format(time.RFC3339))
+		fmt.Printf("%3s   Key fingerprint = %s\n", "", fingerprintString(sec.Fingerprint[:]))
+		fmt.Println()
+	}
+
+	pub := entity.PrimaryKey
+	bl, _ = pub.BitLength()
+	fmt.Printf("%3s   %4d /%16s %s\n", "pub", bl, pub.KeyIdString(), pub.CreationTime.Format(time.RFC3339))
+	fmt.Printf("%3s   Key fingerprint = %s\n", "", fingerprintString(pub.Fingerprint[:]))
+	for _, identity := range entity.Identities {
+		fmt.Printf("%3s   %4s  %16s %s\n", "uid", "", "", identity.Name)
+	}
+	for _, sk := range entity.Subkeys {
+		subkey := sk.PublicKey
+		bl, _ := subkey.BitLength()
+		fmt.Printf("%3s   %4d /%16s %s\n", "sub", bl, subkey.KeyIdString(), subkey.CreationTime.Format(time.RFC3339))
+	}
 }
 
 func trySig(filename string) (bool, error) {
